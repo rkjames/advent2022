@@ -25,6 +25,33 @@ fn me_score(opp : i32, me : i32) -> i32 {
     0
 }
 
+fn me_choice(opp : i32, me : i32) -> i32 {
+    if me == 2 {
+        // draw
+        return opp;
+    }
+
+    if me == 1 {
+        // lose
+        match opp {
+            1 => return 3,
+            2 => return 1,
+            3 => return 2, 
+            _ => failfast("me_choice lose") 
+        }
+    }
+
+    // win
+    match opp {
+        1 => return 2,
+        2 => return 3,
+        3 => return 1,     
+        // todo: why can't i failfast here?       
+        _ => 999999
+    }
+
+}
+
 fn main() {
     println!("Hello, world!");
     let data = fs::read_to_string("test1.txt").expect("read to string failed");
@@ -50,12 +77,13 @@ fn main() {
 
     let mut me_total = 0;
     for i in 0..opp.len() {
-        let round = me_score(opp[i], me[i]) + me[i];
+        let choose = me_choice(opp[i], me[i]);
+        let round = me_score(opp[i], choose) + choose;
         println!("{round}");
         me_total += round;
     }
 
-    println!("{:?}", opp);
-    println!("{:?}", me);
+    //println!("{:?}", opp);
+    //println!("{:?}", me);
     println!("{me_total}");
 }
