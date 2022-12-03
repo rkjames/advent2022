@@ -1,25 +1,37 @@
-use std::fs;
 use std::collections::HashSet;
+use std::fs;
 
 fn main() {
     println!("Hello, world!");
     let data = fs::read_to_string("test1.txt").expect("read to string failed");
     let lines: Vec<&str> = data.split("\n").collect();
-    let mut extra : Vec<char> = Vec::new();
+    let mut extra: Vec<char> = Vec::new();
 
+    let mut count = 0;
+    let mut first = HashSet::new();
+    let mut second = HashSet::new();
     for line in lines {
-        let (left,right) = line.split_at(line.len() / 2);
-        let mut s = HashSet::new();
-
-        for c in left.chars() {
-            s.insert(c);
-        }
-
-        for c in right.chars() {
-            if s.contains(&c) {
-                extra.push(c);
-                break;
+        if count == 0 {
+            for c in line.chars() {
+                first.insert(c);
             }
+            count += 1;
+        } else if count == 1 {
+            for c in line.chars() {
+                second.insert(c);
+            }
+            count += 1;
+        } else {
+            let intersect: HashSet<_> = first.intersection(&second).collect();
+            for c in line.chars() {
+                if intersect.contains(&c) {
+                    extra.push(c);
+                    break;
+                }
+            }
+            count = 0;
+            first.clear();
+            second.clear();
         }
     }
 
