@@ -2,6 +2,7 @@ use std::fs;
 
 // counts the number of stacks
 fn stack_count(_s: &Vec<&str>) -> usize {
+    // todo
     9
 }
 fn parse() -> Vec<Vec<char>> {
@@ -39,7 +40,7 @@ fn parse() -> Vec<Vec<char>> {
                 let index: usize = 1 + (i * 4);
                 let c = linechars[index];
                 if c != ' ' {
-                    println!("pushing {c}");
+                    //println!("pushing {c}");
                     v[i].push(c);
                 }
             }
@@ -49,9 +50,16 @@ fn parse() -> Vec<Vec<char>> {
             let source: usize = s[3].parse().unwrap();
             let dest: usize = s[5].parse().unwrap();
             //println!("movy count={count} from {source} to {dest}");
+            // todo: learn how to copy around sub vectors.
+            let mut tmp : Vec<char> = Vec::new();
             for _i in 0..count {
                 // zero based.
                 let c = v[source - 1].pop().unwrap();
+                tmp.push(c);
+            }
+            for _i in 0..count {
+                let c = tmp.pop().unwrap();
+                // zero based.
                 v[dest - 1].push(c);
             }
             //println!("{:?}", v);
