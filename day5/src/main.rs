@@ -1,13 +1,69 @@
+use std::fs;
+
+// counts the number of stacks
+fn stack_count(_s: &Vec<&str>) -> usize {
+    9
+}
+fn parse() -> Vec<Vec<char>> {
+    let data = fs::read_to_string("test1.txt").expect("read to string failed");
+    let lines: Vec<&str> = data.split("\n").collect();
+
+    // count stacks
+    let stacks = stack_count(&lines);
+    let mut v: Vec<Vec<char>> = Vec::new();
+    (0..stacks).for_each(|_i| {
+        let vc: Vec<char> = Vec::new();
+        v.push(vc);
+    });
+
+    // loads stacks
+    let mut parse_stacks = true;
+    for line in lines {
+        //println!("{}", line);
+        if line.len() == 1 {
+            // empty line seperating stacks from instructions.
+            parse_stacks = false;
+            (0..stacks).for_each(|i| {
+                v[i].reverse();
+            });
+
+            continue;
+        }
+        if parse_stacks {
+            let linechars: Vec<char> = line.chars().collect();
+            if linechars[1] == '1' {
+                // stack identifier
+                continue;
+            }
+            for i in 0..stacks {
+                let index: usize = 1 + (i * 4);
+                let c = linechars[index];
+                if c != ' ' {
+                    println!("pushing {c}");
+                    v[i].push(c);
+                }
+            }
+        } else {
+            let s: Vec<&str> = line.trim().split(" ").collect();
+            let count: usize = s[1].parse().unwrap();
+            let source: usize = s[3].parse().unwrap();
+            let dest: usize = s[5].parse().unwrap();
+            //println!("movy count={count} from {source} to {dest}");
+            for _i in 0..count {
+                // zero based.
+                let c = v[source - 1].pop().unwrap();
+                v[dest - 1].push(c);
+            }
+            //println!("{:?}", v);
+        }
+    }
+
+    v
+}
+
 fn main() {
-    println!("Hello, world!");
-    let mut v : Vec<i32> = Vec::new();
-    v.push(1);
-    let mut v2 : Vec<i32> = Vec::new();
-    v2.push(2);
-    v2.push(3);
-    let mut s : Vec<Vec<i32>> = Vec::new();
-    s.push(v);
-    s.push(v2);
-    println!("{:?}", s[1][1]);
-    
+    let v = parse();
+    for inner in &v {
+        print!("{}", inner[inner.len() - 1]);
+    }
 }
