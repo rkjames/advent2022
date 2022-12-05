@@ -49,20 +49,11 @@ fn parse() -> Vec<Vec<char>> {
             let count: usize = s[1].parse().unwrap();
             let source: usize = s[3].parse().unwrap();
             let dest: usize = s[5].parse().unwrap();
-            //println!("movy count={count} from {source} to {dest}");
-            // todo: learn how to copy around sub vectors.
-            let mut tmp : Vec<char> = Vec::new();
-            for _i in 0..count {
-                // zero based.
-                let c = v[source - 1].pop().unwrap();
-                tmp.push(c);
-            }
-            for _i in 0..count {
-                let c = tmp.pop().unwrap();
-                // zero based.
-                v[dest - 1].push(c);
-            }
-            //println!("{:?}", v);
+            // learnt here: https://git.jessewalling.com/jessolm/advent_of_code/src/branch/master/day05/src/main.rs
+            let stack = &mut v[source - 1];
+            let items = stack.split_off(stack.len() - count);
+            let stack = &mut v[dest - 1];
+            stack.extend(items);
         }
     }
 
