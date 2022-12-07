@@ -79,14 +79,14 @@ fn main() {
             }
         }
 
-        println!("{:?}", updates);
+        //println!("{:?}", updates);
 
         for u in updates {
             let start = d.get(&u.key).unwrap();
             d.insert(u.key, start + u.size);
         }
     }
-    println!("{:?}", d);
+    //println!("{:?}", d);
 
     // todo: iterator adapter fanciness
     let mut sum: i32 = 0;
@@ -96,5 +96,20 @@ fn main() {
         }
     }
 
-    println!("{sum}");
+    println!("sum of smaller dirs part1 = {sum}");
+
+    let root_size = d.get("/").unwrap();
+    println!("root size={}", root_size);
+
+    let free = root_size - 40000000;
+    println!("free={}", free);
+
+    let mut candidate = 999999999;
+    for (cwd, size) in d.iter() {
+        if *size < candidate && *size >= free {
+            println!("found {cwd}={size}");
+            candidate = *size;
+        }
+    }
+    println!("size part2={candidate}");
 }
