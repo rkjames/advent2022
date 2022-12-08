@@ -20,58 +20,56 @@ fn main() {
     let v = parse();
     let l = v.len();
 
-    // track what we've seen
-    let mut seen: Vec<Vec<bool>> = Vec::new();
-    for _x in 0..l {
-        let mut row = Vec::new();
-        for _y in 0..l {
-            row.push(false);
+    // todo: how to make array of iter + rev iter
+    // todo: how to do a decreasing for loop variable?
+
+    let mut score = 0;
+    let mut location = (0, 0);
+    for x in 0..l {
+        for y in 0..l {
+            // current height
+            let current: i32 = v[x][y];
+
+            let mut up: i32 = 0;
+            for i in (0..x).rev() {
+                up += 1;
+                if v[i][y] >= current {
+                    break;
+                }
+            }
+
+            let mut down: i32 = 0;
+            for i in x+1..l {
+                down += 1;
+                if v[i][y] >= current {
+                    break;
+                }
+            }
+
+            let mut left: i32 = 0;
+            for i in (0..y).rev() {
+                left += 1;
+                if v[x][i] >= current {
+                    break;
+                }
+            }
+
+            let mut right: i32 = 0;
+            for i in y+1..l {
+                right += 1;
+                if v[x][i] >= current {
+                    break;
+                }
+            }
+
+            let current_score = left * right * up * down;
+            if current_score > score {
+                score = current_score;
+                location = (x, y);
+            }
         }
-        seen.push(row);
     }
 
-    for r in 0..l {
-        // todo: how to make array of iter + rev iter
-        // todo: how to do a decreasing for loop variable?
-        // current height
-        let mut current: i32 = -1;
-        for i in 0..l {
-            if v[r][i] > current {
-                current = v[r][i];
-                seen[r][i] = true;
-            }
-        }
-
-        let mut current: i32 = -1;
-        for i in (0..l).rev() {
-            if v[r][i] > current {
-                current = v[r][i];
-                seen[r][i] = true;
-            }
-        }
-
-        let mut current: i32 = -1;
-        for i in 0..l {
-            if v[i][r] > current {
-                current = v[i][r];
-                seen[i][r] = true;
-            }
-        }
-
-        let mut current: i32 = -1;
-        for i in (0..l).rev() {
-            if v[i][r] > current {
-                current = v[i][r];
-                seen[i][r] = true;
-            }
-        }
-    }
-
-    println!("{:?}", v);
-    println!("{:?}", seen);
-    let mut count = 0;
-    for r in seen {
-        count += r.iter().filter(|b| **b).count();
-    }
-    println!("count= {count}");
+    //println!("{:?}", v);
+    println!("score= {score} at {:?}", location);
 }
