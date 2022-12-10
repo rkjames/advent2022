@@ -45,6 +45,8 @@ fn main() {
 
             // todo: error[E0499]: cannot borrow `rope` as mutable more than once at a time
             // --> no references --> hard to read
+            // learn: https://github.com/ropewalker/advent_of_code_2022/blob/master/src/day09.rs#L32
+            
             for i in 1..rope.len() {
                 if !(rope[i - 1].x >= rope[i].x - 1
                     && rope[i - 1].x <= rope[i].x + 1
