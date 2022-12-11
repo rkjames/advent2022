@@ -1,20 +1,21 @@
-use std::fs;
+use std::{collections::VecDeque, fs};
 
 #[derive(Debug, PartialEq, Copy, Clone)]
 enum Operation {
     Add,
     Multiply,
-    Square
+    Square,
 }
 
 #[derive(Debug, PartialEq, Clone)]
 struct Monkey {
-    items: Vec<i32>,
+    items: VecDeque<i32>,
     op: Operation,
     op_val: i32,
     test: i32,
     test_true: usize,
     test_false: usize,
+    inspect: usize,
 }
 
 fn parse() -> Vec<Monkey> {
@@ -34,10 +35,10 @@ fn parse() -> Vec<Monkey> {
         let line = it.next().unwrap().trim();
         let offset = line.find(char::is_numeric).unwrap();
         let s: Vec<_> = line[offset..].split(",").collect();
-        let mut items: Vec<i32> = Vec::new();
+        let mut items: VecDeque<i32> = VecDeque::new();
         for i in s {
             let ite: i32 = i.trim().parse().unwrap();
-            items.push(ite);
+            items.push_back(ite);
         }
 
         // Operation: new = old * 19
@@ -52,26 +53,34 @@ fn parse() -> Vec<Monkey> {
             assert_eq!(op, Operation::Multiply);
             op = Operation::Square;
         } else {
-            op_val  = line[offset.unwrap()..].parse().unwrap();
+            op_val = line[offset.unwrap()..].parse().unwrap();
         }
 
         // todo: move these repeated 3 lines to function.
         // Test: divisible by 23
         let line = it.next().unwrap().trim();
         let offset = line.find(char::is_numeric).unwrap();
-        let test : i32 = line[offset..].parse().unwrap();
+        let test: i32 = line[offset..].parse().unwrap();
 
         //   If true: throw to monkey 2
         let line = it.next().unwrap().trim();
         let offset = line.find(char::is_numeric).unwrap();
-        let test_true : usize = line[offset..].parse().unwrap();
+        let test_true: usize = line[offset..].parse().unwrap();
 
         //   If false: throw to monkey 3
         let line = it.next().unwrap().trim();
         let offset = line.find(char::is_numeric).unwrap();
-        let test_false : usize = line[offset..].parse().unwrap();
-        
-        let m = Monkey { items, op, op_val, test, test_true, test_false};
+        let test_false: usize = line[offset..].parse().unwrap();
+
+        let m = Monkey {
+            items,
+            op,
+            op_val,
+            test,
+            test_true,
+            test_false,
+            inspect: 0,
+        };
         monkeys.push(m);
 
         // blank line
@@ -81,31 +90,43 @@ fn parse() -> Vec<Monkey> {
     monkeys
 }
 
-fn round(monkeys : &mut Vec<Monkey>) {
-    for m in monkeys {
-        for i in m.items {
+fn round(monkeys: &mut Vec<Monkey>) {
+    for i in 0..monkeys.len() {
+        monkeys[i].inspect += monkeys[i].items.len();
+        while !monkeys[i].items.is_empty() {
+            let item = monkeys[i].items.pop_front().unwrap();
+            let m = &monkeys[i];
             // inspect
             let mut worry = match m.op {
-                Operation::Add => i + m.op_val,
-                Operation::Multiply => i * m.op_val,
-                Operation::Square => i * i,
+                Operation::Add => item + m.op_val,
+                Operation::Multiply => item * m.op_val,
+                Operation::Square => item * item,
             };
 
             // relief
             worry = worry / 3;
 
-            // test 
+            // test
             let mut throw: usize = m.test_false;
             if worry % m.test == 0 {
                 throw = m.test_true;
             }
-            println!("{i} -> {worry}: throw to {throw}");
+            // println!("{i} -> {worry}: throw to {throw}");
+            monkeys[throw].items.push_back(worry);
         }
     }
 }
 
 fn main() {
     let mut m = parse();
-    round(&mut m);
-    println!("{:?}", m);
+    for _r in 0..20 {
+        round(&mut m);
+        //println!("round {r}: {:?}", m);
+    }
+
+    let mut v: Vec<usize> = m.iter().map(|m| m.inspect).collect();
+    v.sort();
+    v.reverse();
+    let business = v[0] * v[1];
+    println!("{} * {} = business {business}", v[0], v[1]);
 }
