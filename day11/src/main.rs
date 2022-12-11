@@ -91,6 +91,9 @@ fn parse() -> Vec<Monkey> {
 }
 
 fn round(monkeys: &mut Vec<Monkey>) {
+    // chinese remainder theorem
+    let cmt: i32 = monkeys.iter().map(|m| m.test).product();
+    //println!("cmt = {cmt}");
     for i in 0..monkeys.len() {
         monkeys[i].inspect += monkeys[i].items.len();
         while !monkeys[i].items.is_empty() {
@@ -100,17 +103,26 @@ fn round(monkeys: &mut Vec<Monkey>) {
             let mut worry = match m.op {
                 Operation::Add => item + m.op_val,
                 Operation::Multiply => item * m.op_val,
-                Operation::Square => item * item,
+                Operation::Square => {
+                    let mut tmp: i64 = item as i64 * item as i64;
+                    tmp = tmp % cmt as i64;
+                    let ret :i32 = i32::try_from(tmp).unwrap();
+                    ret
+                }
             };
 
-            // relief
-            worry = worry / 3;
+            // no relief in part 2
+            // worry = worry / 3;
 
             // test
             let mut throw: usize = m.test_false;
             if worry % m.test == 0 {
                 throw = m.test_true;
             }
+
+            // we're only testing divisibility, so just need remainder?
+            worry = worry % cmt;
+
             // println!("{i} -> {worry}: throw to {throw}");
             monkeys[throw].items.push_back(worry);
         }
@@ -119,9 +131,11 @@ fn round(monkeys: &mut Vec<Monkey>) {
 
 fn main() {
     let mut m = parse();
-    for _r in 0..20 {
+    for r in 1..=10000 {
         round(&mut m);
-        //println!("round {r}: {:?}", m);
+        if r % 1000 == 0 {
+            println!("round {r}: {:?}", m);
+        }
     }
 
     let mut v: Vec<usize> = m.iter().map(|m| m.inspect).collect();
