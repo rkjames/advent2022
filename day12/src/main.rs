@@ -1,3 +1,5 @@
+use petgraph::graph::Graph;
+use petgraph::algo;
 use std::fs;
 
 fn parse() -> Vec<Vec<char>> {
@@ -93,31 +95,88 @@ fn startend(graph: &mut Vec<Vec<char>>) -> ((usize, usize), (usize, usize)) {
     }
     (start, end)
 }
+
+fn build_petgraph(ingraph: Vec<Vec<char>>, start: (usize, usize), end: (usize, usize)) {
+    let mut graph = Graph::<(), ()>::new(); // directed and unlabeled
+    let mut nodes: Vec<Vec<_>> = Vec::new();
+
+    // vertices
+    for row in 0..ingraph.len() {
+        let mut nodes_row: Vec<_> = Vec::new();
+        for _col in 0..ingraph[row].len() {
+            let node_index = graph.add_node(());
+            nodes_row.push(node_index);
+        }
+        nodes.push(nodes_row);
+    }
+
+    // edges
+    for row in 0..ingraph.len() {
+        for col in 0..ingraph[row].len() {
+            let mut visit = [(0, 0), (0, 0), (0, 0), (0, 0)];
+            let mut c = 0;
+            if row < ingraph.len() - 1 {
+                visit[c] = (row + 1, col);
+                c += 1;
+            }
+            if row > 0 {
+                visit[c] = (row - 1, col);
+                c += 1;
+            }
+            if col < ingraph[0].len() - 1 {
+                visit[c] = (row, col + 1);
+                c += 1;
+            }
+            if col > 0 {
+                visit[c] = (row, col - 1);
+                c += 1;
+            }
+            for i in 0..c {
+                let (nrow, ncol) = visit[i];
+                if (ingraph[row][col] as i32 - ingraph[nrow][ncol] as i32) < -1 {
+                    // target is too high.
+                    continue;
+                }
+                graph.add_edge(nodes[row][col], nodes[nrow][ncol], ());
+            }
+        }
+    }
+
+    // dijkstra
+    let (r,c) = start;
+    let start_index = nodes[r][c];
+    let result = algo::dijkstra(&graph, start_index, None, |_| 1);
+    let (r,c) = end;
+    let end_index = nodes[r][c];
+    println!("cost from {:?} to {:?} is {}", start, end, result.get(&end_index).unwrap());
+}
+
 fn main() {
     let mut graph = parse();
     // println!("{:?}", graph);
     let (start, end) = startend(&mut graph);
     println!("start={:?}, end={:?}", start, end);
+    build_petgraph(graph, start, end);
 
     // oddly enough, HashSet hashing was dominant cpu usage.
-    let mut visited: Vec<Vec<bool>> = Vec::new();
-    for _r in 0..graph.len() {
-        let mut row: Vec<bool> = Vec::new();
-        for _c in 0..graph[0].len() {
-            row.push(false);
-        }
-        visited.push(row);
-    }
-    let mut min_complete = usize::MAX;
-    // let mut dbgpath: Vec<(usize, usize)> = Vec::new();
-    traverse(
-        &graph,
-        start,
-        end,
-        0,
-        &mut visited,
-        &mut min_complete,
-        //&mut dbgpath,
-    );
-    println!("min walk: {min_complete}");
+    // let mut visited: Vec<Vec<bool>> = Vec::new();
+    // for _r in 0..graph.len() {
+    //     let mut row: Vec<bool> = Vec::new();
+    //     for _c in 0..graph[0].len() {
+    //         row.push(false);
+    //     }
+    //     visited.push(row);
+    // }
+    // let mut min_complete = usize::MAX;
+    // // let mut dbgpath: Vec<(usize, usize)> = Vec::new();
+    // traverse(
+    //     &graph,
+    //     start,
+    //     end,
+    //     0,
+    //     &mut visited,
+    //     &mut min_complete,
+    //     //&mut dbgpath,
+    // );
+    // println!("min walk: {min_complete}");
 }
