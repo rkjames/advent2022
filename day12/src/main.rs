@@ -42,24 +42,25 @@ fn traverse(
 
     // avoid heap allocation.
     let mut visit = [(0, 0), (0, 0), (0, 0), (0, 0)];
-    let mut i = 0;
-    if row > 0 {
-        visit[i] = (row - 1, col);
-        i += 1;
-    }
+    let mut c = 0;
     if row < graph.len() - 1 {
-        visit[i] = (row + 1, col);
-        i += 1;
+        visit[c] = (row + 1, col);
+        c += 1;
     }
-    if col > 0 {
-        visit[i] = (row, col - 1);
-        i += 1;
+    if row > 0 {
+        visit[c] = (row - 1, col);
+        c += 1;
     }
     if col < graph[0].len() - 1 {
-        visit[i] = (row, col + 1);
+        visit[c] = (row, col + 1);
+        c += 1;
     }
-    for v in visit {
-        let (nrow, ncol) = v;
+    if col > 0 {
+        visit[c] = (row, col - 1);
+        c += 1;
+    }
+    for i in 0..c {
+        let (nrow, ncol) = visit[i];
         if (graph[row][col] as i32 - graph[nrow][ncol] as i32) < -1 {
             // target is too high.
             continue;
@@ -68,7 +69,7 @@ fn traverse(
             // already visited.
             continue;
         }
-        traverse(graph, v, end, step + 1, visited, min_complete);
+        traverse(graph, visit[i], end, step + 1, visited, min_complete);
     }
 
     visited[row][col] = false;
