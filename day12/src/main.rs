@@ -1,6 +1,6 @@
-use petgraph::graph::Graph;
 use petgraph::algo;
-use std::fs;
+use petgraph::graph::Graph;
+use std::{cmp, fs};
 
 fn parse() -> Vec<Vec<char>> {
     let data = fs::read_to_string("test1.txt").expect("read to string failed");
@@ -143,12 +143,34 @@ fn build_petgraph(ingraph: Vec<Vec<char>>, start: (usize, usize), end: (usize, u
     }
 
     // dijkstra
-    let (r,c) = start;
+    let (r, c) = start;
     let start_index = nodes[r][c];
     let result = algo::dijkstra(&graph, start_index, None, |_| 1);
-    let (r,c) = end;
+    let (r, c) = end;
     let end_index = nodes[r][c];
-    println!("cost from {:?} to {:?} is {}", start, end, result.get(&end_index).unwrap());
+    println!(
+        "part 1: cost from {:?} to {:?} is {}",
+        start,
+        end,
+        result.get(&end_index).unwrap()
+    );
+
+    let mut cheapest = 999999;
+    for row in 0..ingraph.len() {
+        for col in 0..ingraph[row].len() {
+            if ingraph[row][col] == 'a' {
+                let start_index = nodes[row][col];
+                let result = algo::dijkstra(&graph, start_index, None, |_| 1);
+                let steps_maybe = result.get(&end_index);
+                if steps_maybe.is_some() {
+                    let steps = steps_maybe.unwrap();
+                    cheapest = cmp::min(cheapest, *steps);
+                }
+            }
+        }
+    }
+
+    println!("cheapest = {cheapest}");
 }
 
 fn main() {
