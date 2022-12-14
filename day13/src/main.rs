@@ -104,28 +104,33 @@ fn main() {
     let data = fs::read_to_string("test1.txt").expect("read to string failed");
     let lines: Vec<&str> = data.split("\n").collect();
     let mut it = lines.iter();
-    let mut total = 0;
-    let mut pair_count = 1;
+    let mut parsed_lines: Vec<&str> = Vec::new();
     loop {
-        let left = parse(it.next().unwrap().trim());
-        let right = parse(it.next().unwrap().trim());
-        println!("{:?}", left);
-        println!("{:?}", right);
-        let order = ordered(&left, &right);
-        if order == Ordering::Less {
-            println!("==> adding {pair_count}");
-            total += pair_count;
-        } else if order == Ordering::Greater {
-            println!("==> skipping {pair_count}");
-        } else {
-            println!("equal! {pair_count}");
-        }
+        parsed_lines.push(it.next().unwrap().trim());
+        parsed_lines.push(it.next().unwrap().trim());
         let blank = it.next();
         if blank.is_none() {
             break;
         }
-        pair_count += 1;
     }
+    parsed_lines.push("[[2]]");
+    parsed_lines.push("[[6]]");
 
-    println!("sum of ordered pair counts {total}");
+    parsed_lines.sort_by(|a, b| {
+        let aitem = parse(a);
+        let bitem = parse(b);
+        return ordered(&aitem, &bitem);
+    });
+
+    let mut first = 0;
+    let mut second = 0;
+    for i in 0..parsed_lines.len() {
+        if parsed_lines[i] == "[[2]]" {
+            first = i + 1;
+        }
+        if parsed_lines[i] == "[[6]]" {
+            second = i + 1;
+        }
+    }
+    println!("{} * {} = {}", first, second, first * second);
 }
