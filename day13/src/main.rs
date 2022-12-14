@@ -1,5 +1,6 @@
 use std::{cmp::Ordering, fs};
 
+#[derive(Debug)]
 enum Item {
     Number(i32),
     List(Vec<Item>),
@@ -15,7 +16,7 @@ fn parse(line: &str) -> Item {
         if c == '[' {
             stack.push(Item::List(Vec::new()));
         } else if c == ']' {
-            if stack.len() == 0 {
+            if stack.len() == 1 {
                 ret = stack.pop().unwrap();
             } else {
                 let popped = stack.pop().unwrap();
@@ -41,6 +42,10 @@ fn parse(line: &str) -> Item {
                 Item::Number(_n) => unreachable!(),
                 Item::List(list) => list.push(Item::Number(num)),
             }
+        } else if c == ',' {
+            // nothing
+        } else {
+            unreachable!();
         }
         i += 1;
     }
@@ -68,15 +73,18 @@ fn ordered(left: &Item, right: &Item) -> Ordering {
                         // "If the right list runs out of items first, the inputs are not in the right order."
                         return Ordering::Greater;
                     }
-                    let result = ordered(&llist[i],&rlist[i]);
+                    let result = ordered(&llist[i], &rlist[i]);
                     if result != Ordering::Equal {
                         return result;
                     }
                 }
-                // "If the left list runs out of items first, the inputs are in the right order."
-                return Ordering::Less;
-            }
-            else {
+                if llist.len() < rlist.len() {
+                    // "If the left list runs out of items first, the inputs are in the right order."
+                    return Ordering::Less;
+                } else {
+                    return Ordering::Equal;
+                }
+            } else {
                 // left isa list, right isa number.
                 if let Item::Number(rnum) = right {
                     let rtmp = Item::List(vec![Item::Number(*rnum)]);
@@ -93,7 +101,7 @@ fn ordered(left: &Item, right: &Item) -> Ordering {
 }
 
 fn main() {
-    let data = fs::read_to_string("example1.txt").expect("read to string failed");
+    let data = fs::read_to_string("test1.txt").expect("read to string failed");
     let lines: Vec<&str> = data.split("\n").collect();
     let mut it = lines.iter();
     let mut total = 0;
@@ -101,8 +109,16 @@ fn main() {
     loop {
         let left = parse(it.next().unwrap().trim());
         let right = parse(it.next().unwrap().trim());
-        if ordered(&left, &right) != Ordering::Greater {
+        println!("{:?}", left);
+        println!("{:?}", right);
+        let order = ordered(&left, &right);
+        if order == Ordering::Less {
+            println!("==> adding {pair_count}");
             total += pair_count;
+        } else if order == Ordering::Greater {
+            println!("==> skipping {pair_count}");
+        } else {
+            println!("equal! {pair_count}");
         }
         let blank = it.next();
         if blank.is_none() {
