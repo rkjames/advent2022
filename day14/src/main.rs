@@ -11,7 +11,7 @@ fn parse() -> Vec<Vec<Space>> {
     let data = fs::read_to_string("test1.txt").expect("read to string failed");
     let lines: Vec<&str> = data.split("\n").collect();
     let mut v: Vec<Vec<Space>> = Vec::new();
-    for _x in 0..600 {
+    for _x in 0..1200 {
         let mut row: Vec<Space> = Vec::new();
         for _y in 0..200 {
             row.push(Space::Air);
@@ -66,9 +66,28 @@ fn print(v: &Vec<Vec<Space>>) {
         println!("");
     }
 }
+
+fn add_floor(v: &mut Vec<Vec<Space>>) {
+    let mut maxy = 0;
+    for x in 0..1200 {
+        for y in 0..200 {
+            if v[x][y] == Space::Rock && y > maxy {
+                maxy = y;
+            }
+        }
+    }
+
+    maxy += 2;
+
+    for x in 0..1200 {
+        v[x][maxy] = Space::Rock;
+    }
+}
+
 fn main() {
     let mut map = parse();
-    //print(&map);
+    add_floor(&mut map);
+    print(&map);
 
     // example should take 24 iterations
     'grains: loop {
